@@ -1,0 +1,18 @@
+﻿ArmChair - Take a load off your .net web server
+
+Sending emails, logging, and other laborious tasks shouldn't be done synchronously on your web server because they kill performance.  Many people resort to threading tricks, but this introduces complexity, instability, and robs the server of threads that ought to be processing web requests.  ArmChair takes a different approach - you tell it what code needs run, it serializes those expressions and fires them off via msmq, taking only a fraction of a millisecond at the most.  That message is then picked up somewhere else, typically a console app or windows service, which then executes the code.
+
+The result: reliable deferred code execution that keeps your server running smooth and your code running reliably.  Best of all, Armchair leverages .net and some 3rd party libraries, so the code needed to do all this is only a few hundred lines!
+
+Usage:
+Using ArmChair in your mvc projects is easy.  In your controller, just use the Offload method, like:
+	this.OffLoad(() => Email.SendPasswordReset(userId)). 
+In this case, SendPasswordReset is not invoked, it is merely serialized into a type & method name, plus the value of userId.  If a receiver is running, SendPasswordReset will likely be executed almost immediately.  The important thing is that SendPasswordReset isn't performed by the web server at all.
+
+Setup:
+ArmChair takes about 5 minutes to set up.
+In your MVC project:
+
+To make this magic work, you need to add the following action filter to your globalfilters:
+SendOffloadedExecutionsAttribute
+
